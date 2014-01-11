@@ -28,14 +28,14 @@
     </thead>
 
     <tbody>
-    <?php foreach($most_viewed_topics as $categorie => $topics): ?>
-        <?php foreach($topics as $topic): ?>
+    <?php foreach($most_viewed_topics as $category => $most_viewed_topic_group): ?>
+        <?php foreach($most_viewed_topic_group as $most_viewed_topic): ?>
             <tr>
-                <td><?=$categorie?></td>
-                <td><?=$topic->num_views?></td>
-                <td><a href="<?=$topic->url?>"><?=$topic->subject?></a></td>
-                <td><?=$topic->poster_name?></td>
-                <td><?=$topic->date?></td>
+                <td><?=$category?></td>
+                <td><?=$most_viewed_topic->num_views?></td>
+                <td><a href="<?=$most_viewed_topic->url?>"><?=$most_viewed_topic->subject?></a></td>
+                <td><?=$most_viewed_topic->poster_name?></td>
+                <td><?=$most_viewed_topic->date?></td>
             </tr>
         <?php endforeach ?>
     <?php endforeach ?>

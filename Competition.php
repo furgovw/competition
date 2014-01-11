@@ -230,10 +230,10 @@ class Competition
 		$smcFunc    = $this->_smcFunc;
 		$categories = $this->categories();
 
-		foreach ($categories as $categorie) {
-			$most_viewed_topics[$categorie->name] = array();
+		foreach ($categories as $category) {
+			$most_viewed_topics[$category->name] = array();
 
-			$boards = $this->get_boards_and_boards_childs($categorie->boards);
+			$boards = $this->get_boards_and_boards_childs($category->boards);
 
 			$result = $smcFunc['db_query']('', "
 				SELECT m.*, u.member_name, t.num_views
@@ -263,7 +263,7 @@ class Competition
 				$rowObj->num_views   = number_format($row['num_views'], 0, ',', '.');
 				$rowObj->url         = 'http://www.furgovw.org/index.php?topic='.$row['id_topic'];
 
-				$most_viewed_topics[$categorie->name][] = $rowObj;
+				$most_viewed_topics[$category->name][] = $rowObj;
 			}
 		}
 
@@ -385,9 +385,9 @@ class Competition
         $categories = $this->categories();
         $votes      = array();
 
-        foreach ($categories as $categorie) {
+        foreach ($categories as $category) {
 
-            $votes[$categorie->name] = array();
+            $votes[$category->name] = array();
 
             $result = $smcFunc['db_query']('', "
                 SELECT fconcurso_votos.topic_id,
@@ -406,7 +406,7 @@ class Competition
                  ON t.id_first_msg = m.id_msg
                  LEFT JOIN smf_members u
                  ON m.id_member = u.id_member
-                 WHERE fconcurso_hilos.category_id = " . $categorie->id . "
+                 WHERE fconcurso_hilos.category_id = " . $category->id . "
                  GROUP BY fconcurso_votos.topic_id
                  ORDER BY votes DESC, m.poster_time ASC
                 ");
@@ -422,7 +422,7 @@ class Competition
                 $rowObj->poster_name = $row['poster_name'];
                 $rowObj->url         = 'http://www.furgovw.org/index.php?topic='.$row['topic_id'];
 
-                $votes[$categorie->name][] = $rowObj;
+                $votes[$category->name][] = $rowObj;
             }
         }
 
