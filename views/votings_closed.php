@@ -1,0 +1,1 @@
+<h1>Las votaciones están cerradas</h1>

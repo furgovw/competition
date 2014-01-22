@@ -4,7 +4,7 @@
 <div class="row options">
     <div class="col-xs-12 col-sm-8">
         <form method="post" role="form">
-            <?php foreach($options as $index => $option): ?>
+            <?php foreach($this->competition->get_options() as $index => $option): ?>
                 <label for="<?=$index?>"><?=$index?></label> <input type="text" name="<?=$index?>" value="<?=$option?>"><br>
             <?php endforeach; ?>
             <label for="new-option">Nueva opción</label> <input type="text" name="new-option">
@@ -72,7 +72,7 @@
                 <?= $topic->date ?>
             </td>
             <td>
-                <a href="<?=Competition::BASE_URL?>?delete=<?=$topic->id?>">Borrar</a>
+                <a href="<?=$this->competition->getBaseUrl()?>?delete=<?=$topic->id?>">Borrar</a>
             </td>
         </tr>
     <?php endforeach ?>

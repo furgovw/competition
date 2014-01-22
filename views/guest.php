@@ -1,0 +1,1 @@
+<h1>Debes conectarte para poder votar</h1>

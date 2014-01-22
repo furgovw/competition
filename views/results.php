@@ -1,5 +1,5 @@
-<?php foreach ($categoryVotes as $categorie => $votes): ?>
-    <h2><?=$categorie?></h2>
+<?php foreach ($categoryVotes as $category => $votes): ?>
+    <h2><?=$category?></h2>
     <table class="table">
         <?php foreach ($votes as $index => $vote): ?>
             <tr<?php if ($index < 3) echo ' class="success"' ?>>

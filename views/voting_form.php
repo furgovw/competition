@@ -2,7 +2,7 @@
 <div class="row">
     <div class="col-xs-12 col-sm-8 col-sm-offset-1">
 
-        <h2>Votaciones concurso furgovw <?=$options['year']?></h2>
+        <h2>Votaciones concurso furgovw <?=$this->competition->getOptions('year')?></h2>
         <h4><?=$stats->totalMembers?> foreros están participando en la votación</h4>
 
         <div class="alert alert-info">Marca un hilo por cada categoría, debe ser el que quieres que sea el ganador.</div>
