@@ -18,7 +18,7 @@ $baseUrl  = 'http://www.furgovw.org/concurso/';
 $basePath = '/data/www/furgovw/';
 
 if (!file_exists($basePath . 'SSI.php')) {
-    throw new Exception("SMF's SSI.php not found");
+	throw new Exception("SMF's SSI.php not found");
 }
 
 $competition      = new Furgovw\Competition($baseUrl, $basePath);

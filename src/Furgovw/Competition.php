@@ -13,13 +13,13 @@ class Competition
 	protected $smcFunc;
 	protected $context;
 	protected $user_info;
-    protected $baseUrl;
-    protected $basePath;
+	protected $baseUrl;
+	protected $basePath;
 
 	public function __construct($baseUrl, $basePath)
 	{
-        $this->baseUrl  = $baseUrl;
-        $this->basePath = $basePath;
+		$this->baseUrl  = $baseUrl;
+		$this->basePath = $basePath;
 
 		$this->setupSmf();
 		$this->loadOptions();
@@ -64,23 +64,23 @@ class Competition
 
 	function get_options($optionSlug = false)
 	{
-        return ($optionSlug ? $this->options[$optionSlug] : $this->options);
+		return ($optionSlug ? $this->options[$optionSlug] : $this->options);
 	}
 
-    function get_context()
-    {
-        return $this->context;
-    }
+	function get_context()
+	{
+		return $this->context;
+	}
 
-    function getBaseUrl()
-    {
-        return $this->baseUrl;
-    }
+	function getBaseUrl()
+	{
+		return $this->baseUrl;
+	}
 
-    function getBasePath()
-    {
-        return $this->basePath;
-    }
+	function getBasePath()
+	{
+		return $this->basePath;
+	}
 
 	function year()
 	{
