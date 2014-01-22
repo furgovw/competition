@@ -1,8 +1,14 @@
 <?php
 /*
- * Competition voting system created for furgovw.org by Javier Montes: @montesjmm / kalimocho@gmail.com
+ * This file is part of the Competition voting system created for furgovw.org
+ * by Javier Montes: @montesjmm / kalimocho@gmail.com / montesjmm.com
+ *
  * http://www.furgovw.org/concurso/
- * Created at October 2013
+ *
+ * Started at October 2013
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace Furgovw;
