@@ -23,7 +23,7 @@
 				<li>
 					<a href="<?=$this->competition->getbaseUrl()?>?resultado">Ver Resultado</a>
 				</li>
-				<?php if ($this->competition->user_is_admin()): ?>
+				<?php if ($this->competition->userIsAdmin()): ?>
 					<li>
 						<a href="<?=$this->competition->getbaseUrl()?>?options">Opciones [Sólo moderadores]</a>
 					</li>

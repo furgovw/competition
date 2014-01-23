@@ -68,12 +68,12 @@ class Competition
 		$this->user_info = $user_info;
 	}
 
-	function get_options($optionSlug = false)
+	function getOptions($optionSlug = false)
 	{
 		return ($optionSlug ? $this->options[$optionSlug] : $this->options);
 	}
 
-	function get_context()
+	function getContext()
 	{
 		return $this->context;
 	}
@@ -93,7 +93,7 @@ class Competition
 		return $this->options['year'];
 	}
 
-	function user_is_admin()
+	function userIsAdmin()
 	{
 		//Checks if user is in any of some user groups
 		if (
@@ -123,7 +123,7 @@ class Competition
 		$this->options = unserialize($row["valor"]);
 	}
 
-	function save_options()
+	function saveOptions()
 	{
 		if (isset($_POST['new-option']) && $_POST['new-option'] != '') {
 			$this->options[$_POST['new-option']] = $_POST['new-option-value'];
@@ -143,7 +143,7 @@ class Competition
 		);
 	}
 
-	function voting_opened()
+	function votingOpened()
 	{
 		if ($this->options['votando'] == 'si')
 			return true;
@@ -151,7 +151,7 @@ class Competition
 			return false;
 	}
 
-	function delete_topic($id)
+	function deleteTopic($id)
 	{
 		if (!is_numeric($id)) {
 			return false;
@@ -248,7 +248,7 @@ class Competition
 		return $categorias;
 	}
 
-	function save_topics()
+	function saveTopics()
 	{
 		if (!isset($_POST['new-topic']) || !isset($_POST['categoria'])) {
 			return false;
@@ -283,7 +283,7 @@ class Competition
 		return true;
 	}
 
-	function most_viewed_topics()
+	function mostViewedTopics()
 	{
 		$smcFunc    = $this->smcFunc;
 		$categories = $this->categories();
@@ -291,7 +291,7 @@ class Competition
 		foreach ($categories as $category) {
 			$most_viewed_topics[$category->name] = array();
 
-			$boards = $this->get_boards_and_boards_childs($category->boards);
+			$boards = $this->getBoardsAndBoardsChilds($category->boards);
 
 			$result = $smcFunc['db_query']('', "
 				SELECT m.*, u.member_name, t.num_views
@@ -328,7 +328,7 @@ class Competition
 		return $most_viewed_topics;
 	}
 
-	function get_boards_and_boards_childs($boards)
+	function getBoardsAndBoardsChilds($boards)
 	{
 		if (!is_array($boards) && is_numeric($boards)) {
 			$boards = array($boards);
@@ -342,14 +342,14 @@ class Competition
 		$boards_and_childs = $boards;
 
 		foreach ($boards as $board) {
-			$boards_and_childs = array_merge($boards_and_childs, $this->get_board_childs($board));
+			$boards_and_childs = array_merge($boards_and_childs, $this->getBoardChilds($board));
 		}
 		$boards_and_childs = array_unique($boards_and_childs);
 
 		return $boards_and_childs;
 	}
 
-	function get_board_childs($board)
+	function getBoardChilds($board)
 	{
 		$childs = array();
 
@@ -362,7 +362,7 @@ class Competition
 		while ($row = $smcFunc['db_fetch_assoc']($result)) {
 			$childs[] = $row['id_board'];
 			if ($row['child_level'] < 4) {
-				$more_childs = $this->get_board_childs($row['id_board']);
+				$more_childs = $this->getBoardChilds($row['id_board']);
 				if ($more_childs) {
 					$childs = array_merge($childs, $more_childs);
 				}
@@ -393,7 +393,7 @@ class Competition
 		return $votes;
 	}
 
-	function save_votes()
+	function saveVotes()
 	{
 		if (!isset($this->context['user']['id']) || $this->context['user']['id'] < 1) {
 			die('ERROR: Debes estar conectado para participar');
@@ -437,7 +437,7 @@ class Competition
 	}
 
 
-	function get_votes()
+	function getVotes()
 	{
 		$smcFunc    = $this->smcFunc;
 		$categories = $this->categories();

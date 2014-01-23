@@ -21,7 +21,7 @@ class Route
 	public function __construct(\Furgovw\Competition $competition)
 	{
 		$this->competition = $competition;
-		$this->options     = $competition->get_options();
+		$this->options     = $competition->getOptions();
 
 		require 'views/header.php';
 
@@ -32,7 +32,7 @@ class Route
 
 	protected function start()
 	{
-		if ($this->competition->user_is_admin()
+		if ($this->competition->userIsAdmin()
 			&&
 			(isset($_POST['new-topic']) ||
 			 isset($_POST['new-option']) ||
@@ -59,20 +59,20 @@ class Route
 	protected function routeAdmin()
 	{
 		if (isset($_POST['new-topic'])) {
-			$this->competition->save_topics();
+			$this->competition->saveTopics();
 		} elseif (isset($_POST['new-option'])) {
-			$this->competition->save_options();
-			$this->options = $this->competition->get_options();
+			$this->competition->saveOptions();
+			$this->options = $this->competition->getOptions();
 		}
 
 		if (isset($_GET['options'])) {
 			$topics             = $this->competition->topics();
 			$categories         = $this->competition->categories();
-			$most_viewed_topics = $this->competition->most_viewed_topics();
+			$most_viewed_topics = $this->competition->mostViewedTopics();
 			require 'views/options.php';
 			return;
 		} elseif (isset($_GET['delete']) && $_GET["delete"] != "") {
-			$this->competition->delete_topic($_GET["delete"]);
+			$this->competition->deleteTopic($_GET["delete"]);
 		}
 
 		require 'views/home.php';
@@ -87,10 +87,10 @@ class Route
 			$this->routeVotes();
 
 		} elseif (isset($_GET['resultado']) &&
-			($this->competition->user_is_admin() ||
+			($this->competition->userIsAdmin() ||
 			$this->options['ver-resultado'] == "si")) {
 
-			$categoryVotes = $this->competition->get_votes();
+			$categoryVotes = $this->competition->getVotes();
 			require 'views/results.php';
 		}
 	}
@@ -98,7 +98,7 @@ class Route
 	protected function routeVotes()
 	{
 		if (isset($_POST['vote'])) {
-			if ($this->competition->save_votes()) {
+			if ($this->competition->saveVotes()) {
 				require 'views/votes_saved.php';
 			} else {
 				require 'views/votes_not_saved.php';
@@ -107,14 +107,14 @@ class Route
 
 		if ((isset($_POST['voting']) &&
 			$_POST["voting"]=="si")
-			&& ($this->competition->voting_opened())) {
+			&& ($this->competition->votingOpened())) {
 
-			$this->competition->save_votes();
+			$this->competition->saveVotes();
 
 		} elseif (isset($_GET['votar'])) {
 
 			if ($this->options['voting-opened'] == 'si') {
-				$context = $this->competition->get_context();
+				$context = $this->competition->getContext();
 
 				if ($context['user']['is_guest']) {
 					require 'views/guest.php';
