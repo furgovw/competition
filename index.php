@@ -22,5 +22,9 @@ if (!file_exists($basePath . 'SSI.php')) {
 }
 
 $competition      = new Furgovw\Competition($baseUrl, $basePath);
+$competition->setupSmf();
+$competition->setupSmfGlobals();
+$competition->loadOptions();
+
 $competitionRoute = new Furgovw\Competition\Route($competition);
 

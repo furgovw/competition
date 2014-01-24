@@ -26,12 +26,9 @@ class Competition
 	{
 		$this->baseUrl  = $baseUrl;
 		$this->basePath = $basePath;
-
-		$this->setupSmf();
-		$this->loadOptions();
 	}
 
-	protected function setupSmf()
+	public function setupSmf()
 	{
 		$headers  = '<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>' . "\n";
 		$headers .= '<script type="text/javascript" src="' . $this->baseUrl . 'js/main.js"></script>' . "\n";
@@ -60,8 +57,11 @@ class Competition
 
 		mysql_select_db($db_name, $connection);
 		$result = $smcFunc['db_query']('', "SET NAMES UTF8");
+	}
 
-		global $smcFunc, $user_info;
+	public function setupSmfGlobals()
+	{
+		global $smcFunc, $user_info, $context;
 
 		$this->smcFunc   = $smcFunc;
 		$this->context   = $context;
@@ -437,17 +437,25 @@ class Competition
 	}
 
 
-	function getVotes()
+	function getVotes($year = false, $onlyWinners = false)
 	{
 		$smcFunc    = $this->smcFunc;
 		$categories = $this->categories();
 		$votes      = array();
+		$yearSql    = '';
+
+		if ((!$year || !is_numeric($year)) &&
+			$year != 'all') {
+
+			$year = $this->options['year'];
+			$yearSql = " AND fconcurso_votos.year = '".$year."' ";
+		}
 
 		foreach ($categories as $category) {
 
 			$votes[$category->name] = array();
 
-			$result = $smcFunc['db_query']('', "
+			$sql = "
 				SELECT fconcurso_votos.topic_id,
 					 COUNT(fconcurso_votos.topic_id) as votes,
 					 m.subject,
@@ -465,9 +473,15 @@ class Competition
 				 LEFT JOIN smf_members u
 				 ON m.id_member = u.id_member
 				 WHERE fconcurso_hilos.category_id = " . $category->id . "
+				 " . $yearSql . "
 				 GROUP BY fconcurso_votos.topic_id
-				 ORDER BY votes DESC, m.poster_time ASC
-				");
+				 ORDER BY votes DESC, m.poster_time ASC";
+
+			if ($onlyWinners) {
+				$sql .= " LIMIT 3";
+			}
+
+			$result = $smcFunc['db_query']('', $sql);
 
 			while ($row = $smcFunc['db_fetch_assoc']($result)) {
 				$rowObj = new \stdClass();
@@ -485,6 +499,21 @@ class Competition
 		}
 
 		return $votes;
+	}
+
+	public function isUserWinner($memberId, $year = false)
+	{
+		$winnersCategories = $this->getVotes('all', true);
+
+		foreach ($winnersCategories as $winners) {
+			foreach ($winners as $winner) {
+				if ($winner->id_member == $memberId) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	public function stats()
