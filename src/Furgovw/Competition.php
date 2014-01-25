@@ -116,11 +116,11 @@ class Competition
 		$smcFunc = $this->smcFunc;
 
 		$result = $smcFunc['db_query']('', "
-			SELECT valor FROM fconcurso_opciones
-			WHERE opcion = 'options'
+			SELECT `value` FROM fcompetition_options
+			WHERE `option` = 'options'
 			");
 		$row = $smcFunc['db_fetch_assoc']($result);
-		$this->options = unserialize($row["valor"]);
+		$this->options = unserialize($row["value"]);
 	}
 
 	function saveOptions()
@@ -138,14 +138,14 @@ class Competition
 		$smcFunc = $this->smcFunc;
 
 		$result = $smcFunc['db_query']('', "
-			UPDATE fconcurso_opciones SET valor = '" . serialize($this->options) . "' WHERE opcion = 'options'
+			UPDATE fcompetition_options SET value = '" . serialize($this->options) . "' WHERE option = 'options'
 			"
 		);
 	}
 
 	function votingOpened()
 	{
-		if ($this->options['votando'] == 'si')
+		if ($this->options['voting-opened'] == 'yes')
 			return true;
 		else
 			return false;
@@ -159,7 +159,7 @@ class Competition
 
 		$smcFunc = $this->smcFunc;
 
-		$sql = "DELETE FROM fconcurso_hilos WHERE id='$id'";
+		$sql = "DELETE FROM fcompetition_topics WHERE id='$id'";
 
 		return $smcFunc['db_query']('', $sql);
 	}
@@ -176,17 +176,17 @@ class Competition
 			m.subject as title,
 			m.id_member as author_id,
 			t.id_topic as id_topic,
-			e.member_name as moderador,
+			e.member_name as moderator,
 			c.name as category,
 			h.category_id
-			FROM fconcurso_hilos h
+			FROM fcompetition_topics h
 			LEFT JOIN smf_topics t
 			ON h.topic_id = t.id_topic
 			LEFT JOIN smf_messages m
 			ON t.id_first_msg = m.id_msg
 			LEFT JOIN smf_members e
-			ON h.moderador_member_id = e.id_member
-			LEFT JOIN fconcurso_categorias c
+			ON h.moderator_member_id = e.id_member
+			LEFT JOIN fcompetition_categories c
 			ON h.category_id = c.id
 			WHERE
 			h.year = '".$year."'
@@ -207,7 +207,7 @@ class Competition
 				$rowObj->author = $author['member_name'];
 			}
 			$rowObj->url = 'http://www.furgovw.org/index.php?topic='.$row['id_topic'];
-			$rowObj->moderador = $row['moderador'];
+			$rowObj->moderator = $row['moderator'];
 			$rowObj->category = $row['category'];
 			$rowObj->id = $row['id'];
 			$rowObj->date = date('d/m/Y H:i', strtotime($row['date']));
@@ -225,9 +225,9 @@ class Competition
 		$smcFunc = $this->smcFunc;
 
 		$sql = "SELECT c.*
-				FROM fconcurso_categorias c ";
+				FROM fcompetition_categories c ";
 		if (is_numeric($year)) {
-			$sql .= 'LEFT JOIN fconcurso_hilos h
+			$sql .= 'LEFT JOIN fcompetition_topics h
 				ON c.id = h.category_id
 				WHERE h.year = "' . $year . '"
 				GROUP BY c.id';
@@ -269,10 +269,10 @@ class Competition
 				$smcFunc = $this->smcFunc;
 
 				$smcFunc['db_query']('', "
-					INSERT INTO fconcurso_hilos
+					INSERT INTO fcompetition_topics
 					SET
 					topic_id            = '".$hilo."',
-					moderador_member_id = '".$this->context['user']['id']."',
+					moderator_member_id = '".$this->context['user']['id']."',
 					category_id         = '".$_POST['categoria']."',
 					year                = '".$this->options['year']."',
 					date                = NOW()
@@ -407,7 +407,7 @@ class Competition
 				$result = $smcFunc['db_query']('', "
 					SELECT v.*
 					FROM fconcurso_votos v
-					LEFT JOIN fconcurso_hilos h
+					LEFT JOIN fcompetition_topics h
 					ON v.topic_id = h.topic_id
 					WHERE v.member_id = ".$this->context['user']['id']."
 					AND v.year = ".$this->options['year']."
@@ -464,15 +464,15 @@ class Competition
 					 m.id_member,
 					 u.member_name
 				 FROM fconcurso_votos
-				 LEFT JOIN fconcurso_hilos
-				 ON fconcurso_votos.topic_id = fconcurso_hilos.topic_id
+				 LEFT JOIN fcompetition_topics
+				 ON fconcurso_votos.topic_id = fcompetition_topics.topic_id
 				 LEFT JOIN smf_topics t
 				 ON fconcurso_votos.topic_id = t.id_topic
 				 LEFT JOIN smf_messages m
 				 ON t.id_first_msg = m.id_msg
 				 LEFT JOIN smf_members u
 				 ON m.id_member = u.id_member
-				 WHERE fconcurso_hilos.category_id = " . $category->id . "
+				 WHERE fcompetition_topics.category_id = " . $category->id . "
 				 " . $yearSql . "
 				 GROUP BY fconcurso_votos.topic_id
 				 ORDER BY votes DESC, m.poster_time ASC";
