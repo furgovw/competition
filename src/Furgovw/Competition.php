@@ -193,7 +193,7 @@ class Competition
 			ORDER BY RAND()
 			");
 
-		$hilos = array();
+		$topics = array();
 		while ($row = $smcFunc['db_fetch_assoc']($result)) {
 
 			$author = false;
@@ -214,10 +214,10 @@ class Competition
 			$rowObj->category_id = $row['category_id'];
 			$rowObj->topic_id = $row['topic_id'];
 
-			$hilos[] = $rowObj;
+			$topics[] = $rowObj;
 		}
 
-		return $hilos;
+		return $topics;
 	}
 
 	function categories($year=false)
@@ -235,45 +235,45 @@ class Competition
 
 		$result = $smcFunc['db_query']('', $sql);
 
-		$categorias = array();
+		$categories = array();
 		while ($row = $smcFunc['db_fetch_assoc']($result)) {
 			$rowObj = new \stdClass();
 			$rowObj->id     = $row['id'];
 			$rowObj->name   = $row['name'];
 			$rowObj->boards = $row['boards'];
 
-			$categorias[] = $rowObj;
+			$categories[] = $rowObj;
 		}
 
-		return $categorias;
+		return $categories;
 	}
 
 	function saveTopics()
 	{
-		if (!isset($_POST['new-topic']) || !isset($_POST['categoria'])) {
+		if (!isset($_POST['new-topic']) || !isset($_POST['category'])) {
 			return false;
 		}
 
-		$hilos = $_POST['new-topic'];
+		$topics = $_POST['new-topic'];
 		for ($cont=0;$cont<=9;$cont++) {
 
-			$hilo = false;
-			if (is_numeric($_POST['categoria']) && $_POST['new-topic'][$cont] != '') {
+			$topic = false;
+			if (is_numeric($_POST['category']) && $_POST['new-topic'][$cont] != '') {
 				preg_match('%topic\=(\d+)%i', $_POST['new-topic'][$cont], $matches);
 				if (isset($matches[1])) {
-					$hilo = $matches[1];
+					$topic = $matches[1];
 				}
 			}
 
-			if (is_numeric($hilo)) {
+			if (is_numeric($topic)) {
 				$smcFunc = $this->smcFunc;
 
 				$smcFunc['db_query']('', "
 					INSERT INTO fcompetition_topics
 					SET
-					topic_id            = '".$hilo."',
+					topic_id            = '".$topic."',
 					moderator_member_id = '".$this->context['user']['id']."',
-					category_id         = '".$_POST['categoria']."',
+					category_id         = '".$_POST['category']."',
 					year                = '".$this->options['year']."',
 					date                = NOW()
 					");
@@ -382,7 +382,7 @@ class Competition
 		$smcFunc = $this->smcFunc;
 		$result = $smcFunc['db_query']('', "
 			SELECT *
-			FROM fconcurso_votos
+			FROM fcompetition_votes
 			WHERE member_id = ".$member_id."
 			AND year = ".$this->options['year']."
 			");
@@ -406,7 +406,7 @@ class Competition
 			if (isset($_POST['category'.$category->id]) && is_numeric(($_POST['category'.$category->id]))) {
 				$result = $smcFunc['db_query']('', "
 					SELECT v.*
-					FROM fconcurso_votos v
+					FROM fcompetition_votes v
 					LEFT JOIN fcompetition_topics h
 					ON v.topic_id = h.topic_id
 					WHERE v.member_id = ".$this->context['user']['id']."
@@ -417,13 +417,13 @@ class Competition
 
 				if ($row) {
 					$smcFunc['db_query']('', "
-						UPDATE fconcurso_votos
+						UPDATE fcompetition_votes
 						SET topic_id = ".$_POST['category'.$category->id]."
 						WHERE id = ".$row['id']."
 						");
 				} else {
 					$smcFunc['db_query']('', "
-						INSERT INTO fconcurso_votos
+						INSERT INTO fcompetition_votes
 						SET member_id = ".$this->context['user']['id'].",
 						year = ".$this->options['year'].",
 						topic_id = ".$_POST['category'.$category->id].",
@@ -448,7 +448,7 @@ class Competition
 			$year != 'all') {
 
 			$year = $this->options['year'];
-			$yearSql = " AND fconcurso_votos.year = '".$year."' ";
+			$yearSql = " AND fcompetition_votes.year = '".$year."' ";
 		}
 
 		foreach ($categories as $category) {
@@ -456,25 +456,25 @@ class Competition
 			$votes[$category->name] = array();
 
 			$sql = "
-				SELECT fconcurso_votos.topic_id,
-					 COUNT(fconcurso_votos.topic_id) as votes,
+				SELECT fcompetition_votes.topic_id,
+					 COUNT(fcompetition_votes.topic_id) as votes,
 					 m.subject,
 					 m.poster_name,
 					 m.poster_time,
 					 m.id_member,
 					 u.member_name
-				 FROM fconcurso_votos
+				 FROM fcompetition_votes
 				 LEFT JOIN fcompetition_topics
-				 ON fconcurso_votos.topic_id = fcompetition_topics.topic_id
+				 ON fcompetition_votes.topic_id = fcompetition_topics.topic_id
 				 LEFT JOIN smf_topics t
-				 ON fconcurso_votos.topic_id = t.id_topic
+				 ON fcompetition_votes.topic_id = t.id_topic
 				 LEFT JOIN smf_messages m
 				 ON t.id_first_msg = m.id_msg
 				 LEFT JOIN smf_members u
 				 ON m.id_member = u.id_member
 				 WHERE fcompetition_topics.category_id = " . $category->id . "
 				 " . $yearSql . "
-				 GROUP BY fconcurso_votos.topic_id
+				 GROUP BY fcompetition_votes.topic_id
 				 ORDER BY votes DESC, m.poster_time ASC";
 
 			if ($onlyWinners) {
@@ -523,7 +523,7 @@ class Competition
 		$smcFunc = $this->smcFunc;
 		$result = $smcFunc['db_query']('', "
 			SELECT count(distinct member_id) as totalMembers
-			FROM fconcurso_votos
+			FROM fcompetition_votes
 			WHERE year = ".$this->options['year']."
 			");
 		$row = $smcFunc['db_fetch_assoc']($result);

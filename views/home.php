@@ -6,7 +6,7 @@
 	</div>
 </div>
 
-<?php if ($this->competition->getOptions('voting-opened') == 'si'): ?>
+<?php if ($this->competition->votingOpened()): ?>
 	<div class="alert alert-success">La votación está abierta</div>
 <?php else: ?>
 	<div class="alert alert-danger">La votación está cerrada</div>

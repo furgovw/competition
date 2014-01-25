@@ -18,10 +18,10 @@
 					<a href="<?=$this->competition->getbaseUrl()?>">Inicio</a>
 				</li>
 				<li>
-					<a href="<?=$this->competition->getbaseUrl()?>?votar">Votar</a>
+					<a href="<?=$this->competition->getbaseUrl()?>?dovote">Votar</a>
 				</li>
 				<li>
-					<a href="<?=$this->competition->getbaseUrl()?>?resultado">Ver Resultado</a>
+					<a href="<?=$this->competition->getbaseUrl()?>?results">Ver Resultado</a>
 				</li>
 				<?php if ($this->competition->userIsAdmin()): ?>
 					<li>

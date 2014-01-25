@@ -43,8 +43,8 @@ class Route
 
 		} elseif (isset($_POST['vote']) ||
 			isset($_POST['voting']) ||
-			isset($_GET['resultado']) ||
-			isset($_GET['votar'])
+			isset($_GET['results']) ||
+			isset($_GET['dovote'])
 			) {
 
 			$this->routeUser();
@@ -82,13 +82,13 @@ class Route
 	{
 		if (isset($_POST['vote']) ||
 			isset($_POST['voting']) ||
-			isset($_GET['votar'])) {
+			isset($_GET['dovote'])) {
 
 			$this->routeVotes();
 
-		} elseif (isset($_GET['resultado']) &&
+		} elseif (isset($_GET['results']) &&
 			($this->competition->userIsAdmin() ||
-			$this->options['ver-resultado'] == "si")) {
+			$this->options['view-results'] == "yes")) {
 
 			$categoryVotes = $this->competition->getVotes();
 			require 'views/results.php';
@@ -105,15 +105,9 @@ class Route
 			}
 		}
 
-		if ((isset($_POST['voting']) &&
-			$_POST["voting"]=="si")
-			&& ($this->competition->votingOpened())) {
+		if (isset($_GET['dovote'])) {
 
-			$this->competition->saveVotes();
-
-		} elseif (isset($_GET['votar'])) {
-
-			if ($this->options['voting-opened'] == 'si') {
+			if ($this->competition->votingOpened()) {
 				$context = $this->competition->getContext();
 
 				if ($context['user']['is_guest']) {
