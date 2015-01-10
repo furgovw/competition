@@ -516,6 +516,23 @@ class Competition
 		return false;
 	}
 
+	public function yearTopicWinner($topicId)
+	{
+		for ($year=2013; $year<=date('Y'); $year++) {
+			$winnersCategories = $this->getVotes($year, true);
+
+			foreach ($winnersCategories as $winners) {
+				foreach ($winners as $winner) {
+					if ($winner->id_topic == $topicId) {
+						return $year;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
 	public function stats()
 	{
 		$stats = new \stdClass();
@@ -534,6 +551,125 @@ class Competition
 
 		return $stats;
 	}
+
+    public function userAddTopic()
+    {
+        $smcFunc = $this->smcFunc;
+
+        if (isset($_GET['add-topic']) &&
+            is_numeric($_GET['add-topic']) &&
+            !$this->context['user']['is_guest']) {
+
+            $idBoard = false;
+
+            $result = $smcFunc['db_query']('', "
+                SELECT id_board
+                FROM smf_topics
+                WHERE id_topic = ".(int)$_GET['add-topic']."
+                ");
+            $row = $smcFunc['db_fetch_assoc']($result);
+            if ($row) {
+                $idBoard = $row['id_board'];
+            }
+
+            if ($idBoard) {
+
+                $result = $smcFunc['db_query']('', "
+                     SELECT * FROM fcompetition_categories
+                     ");
+                $thisBoardIsInCompetition = false;
+
+                if ($smcFunc['db_num_rows']($result) > 0) {
+                    while ($row = $smcFunc['db_fetch_assoc']($result)) {
+                        $boards = explode(',', $row['boards']);
+                        foreach ($boards as $board) {
+                            if ($idBoard == $board || in_array($idBoard, $this->getBoardChilds($board))) {
+                                $thisBoardIsInCompetition = true;
+                                $categoryId = $row['id'];
+                            }
+                        }
+                    }
+                }
+
+                if ($thisBoardIsInCompetition && $categoryId) {
+                    $smcFunc['db_query']('', "
+                        DELETE
+                        FROM fcompetition_proposed_topics
+                        WHERE category_id = ".$categoryId."
+                        AND member_id = ".$this->context['user']['id']."
+                        AND year = ".date('Y')."
+                        ");
+
+                    $smcFunc['db_query']('', "
+                        INSERT INTO fcompetition_proposed_topics
+                        SET topic_id = ".(int)$_GET['add-topic'].",
+                        member_id = ".$this->context['user']['id'].",
+                        category_id = ".$categoryId.",
+                        year = ".date('Y').",
+                        date = NOW()
+                        ");
+
+                    echo '<h1>Tema añadido, gracias por participar.</h1>';
+                    echo '<script>setTimeout(function(){ window.location.href="'.$_GET['back'].'"; }, 3000)</script>';
+                }
+            }
+        }
+    }
+
+    public function proposedTopicsStats()
+    {
+        $smcFunc = $this->smcFunc;
+        $stats = array();
+
+        $result = $smcFunc['db_query']('', "
+            SELECT count(distinct(topic_id)) as total
+            FROM fcompetition_proposed_topics
+            ");
+        $row = $smcFunc['db_fetch_assoc']($result);
+
+        $stats['totalProposedTopics'] = $row['total'];
+
+        $result = $smcFunc['db_query']('', "
+            SELECT p.*, m.subject, c.name as category_name
+            FROM fcompetition_proposed_topics p
+            LEFT JOIN fcompetition_categories c
+            ON p.category_id = c.id
+            LEFT JOIN smf_topics t
+            ON p.topic_id = t.id_topic
+            LEFT JOIN smf_messages m
+            ON t.id_first_msg = m.id_msg
+            WHERE p.year = '".date('Y')."'
+            GROUP BY topic_id
+            ORDER BY category_id ASC, p.id ASC
+            ");
+        while ($row = $smcFunc['db_fetch_assoc']($result)) {
+            $stats['proposedTopics'][] = $row;
+        }
+
+
+        $stats['yourProposedTopics']  = array();
+
+        if (!$this->context['user']['is_guest']) {
+            $result = $smcFunc['db_query']('', "
+                SELECT p.*, m.subject, c.name as category_name
+                FROM fcompetition_proposed_topics p
+                LEFT JOIN fcompetition_categories c
+                ON p.category_id = c.id
+                LEFT JOIN smf_topics t
+                ON p.topic_id = t.id_topic
+                LEFT JOIN smf_messages m
+                ON t.id_first_msg = m.id_msg
+                WHERE p.member_id = ".$this->context['user']['id']."
+                AND p.year = '".date('Y')."'
+                ORDER BY p.id ASC
+                ");
+            while ($row = $smcFunc['db_fetch_assoc']($result)) {
+                $stats['yourProposedTopics'][] = $row;
+            }
+        }
+
+        return $stats;
+    }
 
 }
 

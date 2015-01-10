@@ -44,6 +44,7 @@ class Route
 		} elseif (isset($_POST['vote']) ||
 			isset($_POST['voting']) ||
 			isset($_GET['results']) ||
+            isset($_GET['add-topic']) ||
 			isset($_GET['dovote'])
 			) {
 
@@ -92,6 +93,8 @@ class Route
 
 			$categoryVotes = $this->competition->getVotes();
 			require 'views/results.php';
+        } elseif (isset($_GET['add-topic'])) {
+            $this->competition->userAddTopic();
 		}
 	}
 
