@@ -1,13 +1,14 @@
 
-<?php $stats = $this->competition->proposedTopicsStats(); ?>
+<?php $stats = $this->competition->proposedTopicsStats(date('Y')); ?>
 <div class="jumbotron">
 	<div class="container">
-		<h1>Concurso Furgovw <?=$this->competition->getOptions('year')?></h1>
+		<h1>Concurso Furgovw <?=$this->competition->year()?></h1>
 		<p>Votaciones de los mejores hilos de furgovw.</p>
 	</div>
 </div>
 
 <div class="alert alert-info">
+	<h2>Hilos propuestos para <?=date('Y')?></h2>
 	Se han propuesto <?=$stats['totalProposedTopics']?> temas para las votaciones del mejor hilo de Furgovw de <?=date('Y')?>
 	<ul>
 	<?php foreach($stats['proposedTopics'] as $topic): ?>

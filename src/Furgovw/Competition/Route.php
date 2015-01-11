@@ -37,7 +37,8 @@ class Route
 			(isset($_POST['new-topic']) ||
 			 isset($_POST['new-option']) ||
 			 isset($_GET['options']) ||
-			 isset($_GET['delete']))) {
+			 isset($_GET['delete']) ||
+			 isset($_GET['copy_most_proposed_topics']))) {
 
 			$this->routeAdmin();
 
@@ -64,6 +65,8 @@ class Route
 		} elseif (isset($_POST['new-option'])) {
 			$this->competition->saveOptions();
 			$this->options = $this->competition->getOptions();
+		} elseif (isset($_GET['copy_most_proposed_topics'])) {
+			$this->competition->copyMostProposedTopics();
 		}
 
 		if (isset($_GET['options'])) {
@@ -116,8 +119,8 @@ class Route
 				if ($context['user']['is_guest']) {
 					require 'views/guest.php';
 				} else {
-					$categories = $this->competition->categories($this->options['year']);
-					$topics     = $this->competition->topics();
+					$categories = $this->competition->categories();
+					$topics     = $this->competition->topics($this->competition->year(), true);
 					$votes      = $this->competition->votes($context['user']['id']);
 					$stats      = $this->competition->stats();
 					require 'views/voting_form.php';

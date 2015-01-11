@@ -90,6 +90,9 @@ class Competition
 
 	function year()
 	{
+		if ( ! empty($_GET['year']) && is_numeric($_GET['year']))
+			return $_GET['year'];
+
 		return $this->options['year'];
 	}
 
@@ -117,7 +120,7 @@ class Competition
 
 		$result = $smcFunc['db_query']('', "
 			SELECT `value` FROM fcompetition_options
-			WHERE `option` = 'options'
+			WHERE `key` = 'options'
 			");
 		$row = $smcFunc['db_fetch_assoc']($result);
 		$this->options = unserialize($row["value"]);
@@ -138,7 +141,7 @@ class Competition
 		$smcFunc = $this->smcFunc;
 
 		$result = $smcFunc['db_query']('', "
-			UPDATE fcompetition_options SET value = '" . serialize($this->options) . "' WHERE option = 'options'
+			UPDATE fcompetition_options SET value = '" . addslashes(serialize($this->options)) . "' WHERE `key` = 'options'
 			"
 		);
 	}
@@ -164,14 +167,14 @@ class Competition
 		return $smcFunc['db_query']('', $sql);
 	}
 
-	function topics($year = false)
+	function topics($year = false, $random = false)
 	{
 		$smcFunc = $this->smcFunc;
-		if (!is_numeric($year)) {
-			$year = $this->options['year'];
+		if ( ! is_numeric($year)) {
+			$year = $this->year();
 		}
 
-		$result = $smcFunc['db_query']('', "
+		$sql = "
 			SELECT h.*,
 			m.subject as title,
 			m.id_member as author_id,
@@ -189,9 +192,15 @@ class Competition
 			LEFT JOIN fcompetition_categories c
 			ON h.category_id = c.id
 			WHERE
-			h.year = '".$year."'
-			ORDER BY RAND()
-			");
+			h.year = '" . $year . "'
+			";
+
+		if ($random)
+			$sql .= "ORDER BY RAND()";
+		else
+			$sql .= "ORDER BY category_id ASC";
+
+		$result = $smcFunc['db_query']('', $sql);
 
 		$topics = array();
 		while ($row = $smcFunc['db_fetch_assoc']($result)) {
@@ -220,18 +229,19 @@ class Competition
 		return $topics;
 	}
 
-	function categories($year=false)
+	function categories()
 	{
+		$year = $this->year();
+
 		$smcFunc = $this->smcFunc;
 
 		$sql = "SELECT c.*
 				FROM fcompetition_categories c ";
-		if (is_numeric($year)) {
-			$sql .= 'LEFT JOIN fcompetition_topics h
-				ON c.id = h.category_id
-				WHERE h.year = "' . $year . '"
-				GROUP BY c.id';
-		}
+
+		$sql .= 'LEFT JOIN fcompetition_topics h
+			ON c.id = h.category_id
+			WHERE h.year = "' . $year . '"
+			GROUP BY c.id';
 
 		$result = $smcFunc['db_query']('', $sql);
 
@@ -271,10 +281,10 @@ class Competition
 				$smcFunc['db_query']('', "
 					INSERT INTO fcompetition_topics
 					SET
-					topic_id            = '".$topic."',
-					moderator_member_id = '".$this->context['user']['id']."',
-					category_id         = '".$_POST['category']."',
-					year                = '".$this->options['year']."',
+					topic_id            = '" . $topic . "',
+					moderator_member_id = '" . $this->context['user']['id'] . "',
+					category_id         = '" . $_POST['category'] . "',
+					year                = '" . $this->year() . "',
 					date                = NOW()
 					");
 			}
@@ -325,7 +335,10 @@ class Competition
 			}
 		}
 
-		return $most_viewed_topics;
+		if ( ! empty($most_viewed_topics))
+			return $most_viewed_topics;
+
+		return false;
 	}
 
 	function getBoardsAndBoardsChilds($boards)
@@ -383,8 +396,8 @@ class Competition
 		$result = $smcFunc['db_query']('', "
 			SELECT *
 			FROM fcompetition_votes
-			WHERE member_id = ".$member_id."
-			AND year = ".$this->options['year']."
+			WHERE member_id = " . $member_id . "
+			AND year = " . $this->year() . "
 			");
 		while ($row = $smcFunc['db_fetch_assoc']($result)) {
 			$votes[$row['topic_id']] = true;
@@ -400,7 +413,7 @@ class Competition
 		}
 
 		$smcFunc    = $this->smcFunc;
-		$categories = $this->categories($this->options['year']);
+		$categories = $this->categories($this->year());
 
 		foreach ($categories as $category) {
 			if (isset($_POST['category'.$category->id]) && is_numeric(($_POST['category'.$category->id]))) {
@@ -409,9 +422,9 @@ class Competition
 					FROM fcompetition_votes v
 					LEFT JOIN fcompetition_topics h
 					ON v.topic_id = h.topic_id
-					WHERE v.member_id = ".$this->context['user']['id']."
-					AND v.year = ".$this->options['year']."
-					AND h.category_id = ".$category->id."
+					WHERE v.member_id = " . $this->context['user']['id'] . "
+					AND v.year = " . $this->year() . "
+					AND h.category_id = " . $category->id . "
 					");
 				$row = $smcFunc['db_fetch_assoc']($result);
 
@@ -424,9 +437,9 @@ class Competition
 				} else {
 					$smcFunc['db_query']('', "
 						INSERT INTO fcompetition_votes
-						SET member_id = ".$this->context['user']['id'].",
-						year = ".$this->options['year'].",
-						topic_id = ".$_POST['category'.$category->id].",
+						SET member_id = " . $this->context['user']['id'] . ",
+						year = " . $this->year() . ",
+						topic_id = " . $_POST['category' . $category->id] . ",
 						date = NOW()
 						");
 				}
@@ -444,11 +457,11 @@ class Competition
 		$votes      = array();
 		$yearSql    = '';
 
-		if ((!$year || !is_numeric($year)) &&
+		if (( ! $year || ! is_numeric($year)) &&
 			$year != 'all') {
 
-			$year = $this->options['year'];
-			$yearSql = " AND fcompetition_votes.year = '".$year."' ";
+			$year = $this->year();
+			$yearSql = " AND fcompetition_votes.year = '" . $year . "' ";
 		}
 
 		foreach ($categories as $category) {
@@ -503,6 +516,9 @@ class Competition
 
 	public function isUserWinner($memberId, $year = false)
 	{
+		if ( ! $year)
+			$year = $this->year();
+
 		$winnersCategories = $this->getVotes('all', true);
 
 		foreach ($winnersCategories as $winners) {
@@ -541,7 +557,7 @@ class Competition
 		$result = $smcFunc['db_query']('', "
 			SELECT count(distinct member_id) as totalMembers
 			FROM fcompetition_votes
-			WHERE year = ".$this->options['year']."
+			WHERE year = " . $this->year() . "
 			");
 		$row = $smcFunc['db_fetch_assoc']($result);
 
@@ -616,14 +632,18 @@ class Competition
         }
     }
 
-    public function proposedTopicsStats()
+    public function proposedTopicsStats($year = false)
     {
+		if ( ! $year)
+			$year = $this->year();
+
         $smcFunc = $this->smcFunc;
         $stats = array();
 
         $result = $smcFunc['db_query']('', "
             SELECT count(distinct(topic_id)) as total
             FROM fcompetition_proposed_topics
+            WHERE year = {$year}
             ");
         $row = $smcFunc['db_fetch_assoc']($result);
 
@@ -638,7 +658,7 @@ class Competition
             ON p.topic_id = t.id_topic
             LEFT JOIN smf_messages m
             ON t.id_first_msg = m.id_msg
-            WHERE p.year = '".date('Y')."'
+            WHERE p.year = '" . $year . "'
             GROUP BY topic_id
             ORDER BY category_id ASC, p.id ASC
             ");
@@ -660,7 +680,7 @@ class Competition
                 LEFT JOIN smf_messages m
                 ON t.id_first_msg = m.id_msg
                 WHERE p.member_id = ".$this->context['user']['id']."
-                AND p.year = '".date('Y')."'
+                AND p.year = '" . $year . "'
                 ORDER BY p.id ASC
                 ");
             while ($row = $smcFunc['db_fetch_assoc']($result)) {
@@ -670,6 +690,35 @@ class Competition
 
         return $stats;
     }
+
+	public function copyMostProposedTopics()
+	{
+		$smcFunc = $this->smcFunc;
+
+		$sql = "DELETE FROM fcompetition_topics WHERE year={$this->year()}";
+		$smcFunc['db_query']('', $sql);
+
+		$sql = 'SELECT id FROM fcompetition_categories ORDER BY id';
+		$result = $smcFunc['db_query']('', $sql);
+		while ($row = $smcFunc['db_fetch_assoc']($result)) {
+			$sql = "SELECT COUNT(*) as total, topic_id FROM fcompetition_proposed_topics
+				WHERE category_id = {$row['id']}
+				AND YEAR = {$this->year()}
+				GROUP BY topic_id
+				ORDER BY total DESC
+				LIMIT 10";
+			$resultProposed = $smcFunc['db_query']('', $sql);
+			while ($rowProposed = $smcFunc['db_fetch_assoc']($resultProposed)) {
+				$sql = "INSERT INTO fcompetition_topics
+					SET topic_id = {$rowProposed['topic_id']},
+					moderator_member_id={$this->context['user']['id']},
+					category_id={$row['id']},
+					year={$this->year()},
+					date=NOW()";
+				$smcFunc['db_query']('', $sql);
+			}
+		}
+	}
 
 }
 

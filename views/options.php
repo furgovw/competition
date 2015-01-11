@@ -1,5 +1,7 @@
 <h1>Opciones concurso [sólo moderadores]</h1>
 
+<a href="<?=$this->competition->getbaseUrl()?>?copy_most_proposed_topics">Copiar los posts más propuestos a los posts para votar (<?=$this->competition->year()?>)</a>
+
 <h3>Opciones concurso <a class="options-toggle" href="#">Mostrar/Ocultar</a></h3>
 <div class="row options">
 	<div class="col-xs-12 col-sm-8">
@@ -28,7 +30,7 @@
 	</thead>
 
 	<tbody>
-	<?php foreach($most_viewed_topics as $category => $most_viewed_topic_group): ?>
+	<?php if ($most_viewed_topics) foreach($most_viewed_topics as $category => $most_viewed_topic_group): ?>
 		<?php foreach($most_viewed_topic_group as $most_viewed_topic): ?>
 			<tr>
 				<td><?=$category?></td>
